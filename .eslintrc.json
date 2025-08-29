@@ -1,28 +1,38 @@
 {
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json",
+    "sourceType": "module",
+    "ecmaVersion": 2023
+  },
+  "plugins": ["@typescript-eslint", "import", "simple-import-sort", "unused-imports"],
   "extends": [
     "next/core-web-vitals",
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "prettier"
   ],
-  "plugins": ["import", "simple-import-sort", "unused-imports"],
   "rules": {
-    "unused-imports/no-unused-imports": "warn",
+    "unused-imports/no-unused-imports": "error",
     "no-unused-vars": "off",
+
     "import/first": "error",
     "import/newline-after-import": "error",
     "import/no-duplicates": "error",
+
     "simple-import-sort/imports": [
       "error",
       {
         "groups": [
-          ["^\\u0000"],
-          ["^node:"],
-          ["^react", "^next", "^@?\\w"],
-          ["^@/"],
-          ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
-          ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"],
-          ["^.+\\.?(css|scss|sass|less)$"]
+          ["^\\u0000"], // 1) side effects
+          ["^node:"], // 2) node built-ins
+          ["^react$", "^react-dom$"], // 3) React 최상단
+          ["^next($|/)", "^next-auth($|/)"], // 4) Next 계열
+          ["^@?\\w"], // 5) 외부 패키지 (lodash, zod 등)
+          ["^@/"], // 6) 내부 alias (@/)
+          ["^\\.\\.(?!/?$)", "^\\.\\./?$"], // 7) 상대경로: 상위
+          ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"], // 8) 상대경로: 동일
+          ["^.+\\.?(css|scss|sass|less)$"] // 9) 스타일
         ]
       }
     ],
