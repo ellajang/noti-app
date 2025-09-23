@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function AuthCallbackPage() {
+export const dynamic = "force-dynamic";
+
+function AuthCallback() {
   const router = useRouter();
   const qs = useSearchParams();
 
@@ -29,5 +31,19 @@ export default function AuthCallbackPage() {
     <main className="flex min-h-screen items-center justify-center">
       <p>처리 중…</p>
     </main>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center">
+          <p>처리 중…</p>
+        </main>
+      }
+    >
+      <AuthCallback />
+    </Suspense>
   );
 }
