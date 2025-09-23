@@ -3,10 +3,13 @@
 import { useMemo, useState } from "react";
 import Button from "@/components/common/Button";
 import { Spinner } from "@/components/common/Spinner";
+import { Input } from "../common/Input";
+import CustomDatePicker from "../common/CustomDatePicker";
 
 export default function FindId() {
   const [fullName, setFullName] = useState("");
   const [birth, setBirth] = useState(""); // YYYY-MM-DD
+  const [openPicker, setOpenPicker] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ found: boolean; maskedEmail?: string } | null>(null);
   const [error, setError] = useState("");
@@ -23,7 +26,7 @@ export default function FindId() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/account/find-id", {
+      const res = await fetch("/api/user/find-id", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullName: fullName.trim(), birth }),
@@ -37,28 +40,33 @@ export default function FindId() {
     }
   };
 
-  const inputBase =
-    "w-full rounded-xl border bg-white px-4 py-3 text-[15px] outline-none text-gray-900 placeholder-gray-500 focus:ring-2 border-gray-300 focus:ring-emerald-200 focus:border-emerald-500";
-
   return (
     <div id="panel-id" role="tabpanel" className="space-y-4">
       <form onSubmit={submit} className="space-y-4" noValidate>
-        <input
+        <Input
           id="fullName"
-          value={fullName}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
           placeholder="이름"
-          className={inputBase}
-          autoComplete="name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
         />
-        <input
+        <Input
           id="birth"
+          placeholder="생년월일"
           value={birth}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBirth(e.target.value)}
-          placeholder="생년월일 (YYYY-MM-DD)"
-          className={inputBase}
-          inputMode="numeric"
-          autoComplete="bday"
+          readOnly
+          onClick={() => setOpenPicker(true)}
+        />
+        <CustomDatePicker
+          isOpen={openPicker}
+          value={birth ? new Date(birth) : undefined}
+          onSelect={(date) => {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, "0");
+            const d = String(date.getDate()).padStart(2, "0");
+            setBirth(`${y}-${m}-${d}`);
+            setOpenPicker(false);
+          }}
+          onCancel={() => setOpenPicker(false)}
         />
         <Button type="submit" disabled={loading}>
           {loading ? <Spinner /> : "아이디 찾기"}

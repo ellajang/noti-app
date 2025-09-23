@@ -1,40 +1,33 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function AuthCallbackPage() {
-  const supabase = createClient();
   const router = useRouter();
+  const qs = useSearchParams();
 
   useEffect(() => {
-    const handleOAuthRedirect = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
-      console.log("session:", session);
-      console.log("error:", error);
-      if (error) {
-        console.error("Session error:", error);
-        router.replace("/login");
-        return;
-      }
+    const err = qs.get("error");
+    const errCode = qs.get("error_code");
+    const errDesc = qs.get("error_description");
+    const type = qs.get("type") || "signup";
 
-      if (session) {
-        router.replace("/tasks");
-      } else {
-        router.replace("/login");
-      }
-    };
+    if (err || errCode) {
+      router.replace(
+        `/auth/verified?status=fail${
+          errCode ? `&reason=${encodeURIComponent(errCode)}` : ""
+        }${errDesc ? `&message=${encodeURIComponent(errDesc)}` : ""}`,
+      );
+      return;
+    }
 
-    handleOAuthRedirect();
-  }, [supabase, router]);
+    router.replace(`/auth/verified?status=ok&type=${encodeURIComponent(type)}`);
+  }, [qs, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p>로그인 처리 중...</p>
-    </div>
+    <main className="flex min-h-screen items-center justify-center">
+      <p>처리 중…</p>
+    </main>
   );
 }

@@ -3,12 +3,16 @@
 import { useState } from "react";
 import Button from "@/components/common/Button";
 import { Spinner } from "@/components/common/Spinner";
+import { Input } from "../common/Input";
+import CustomDatePicker from "../common/CustomDatePicker";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function FindPW() {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
+  const [birth, setBirth] = useState(""); // YYYY-MM-DD
+  const [openPicker, setOpenPicker] = useState(false);
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -24,7 +28,7 @@ export default function FindPW() {
     setLoading(true);
     try {
       // 서버에서 email+full_name 일치 확인 후 resetPasswordForEmail 호출
-      await fetch("/api/account/reset-password-verify", {
+      await fetch("/api/user/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, fullName: fullName.trim() }),
@@ -37,28 +41,39 @@ export default function FindPW() {
     }
   };
 
-  const inputBase =
-    "w-full rounded-xl border bg-white px-4 py-3 text-[15px] outline-none text-gray-900 placeholder-gray-500 focus:ring-2 border-gray-300 focus:ring-emerald-200 focus:border-emerald-500";
-
   return (
     <div id="panel-pw" role="tabpanel" className="space-y-4">
       <form onSubmit={submit} className="space-y-4" noValidate>
-        <input
+        <Input
           id="reset-email"
-          type="email"
-          value={email}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
           placeholder="이메일"
-          className={inputBase}
-          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
-        <input
-          id="reset-name"
-          value={fullName}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
+        <Input
+          id="fullName"
           placeholder="이름"
-          className={inputBase}
-          autoComplete="name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+        />
+        <Input
+          id="birth"
+          placeholder="생년월일"
+          value={birth}
+          readOnly
+          onClick={() => setOpenPicker(true)}
+        />
+        <CustomDatePicker
+          isOpen={openPicker}
+          value={birth ? new Date(birth) : undefined}
+          onSelect={(date) => {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, "0");
+            const d = String(date.getDate()).padStart(2, "0");
+            setBirth(`${y}-${m}-${d}`);
+            setOpenPicker(false);
+          }}
+          onCancel={() => setOpenPicker(false)}
         />
         <Button type="submit" disabled={loading}>
           {loading ? <Spinner /> : "재설정 메일 보내기"}

@@ -1,7 +1,19 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
-const mask = (email: string) => email.replace(/^(.).+(@.*)$/, "$1***$2");
+function maskEmailFirst3Last(email: string) {
+  const [local, domain] = email.split("@");
+  if (!local || !domain) return email;
+
+  const n = local.length;
+  if (n <= 1) return `*@${domain}`;
+  if (n === 2) return `${local[0]}*${local[1]}@${domain}`;
+  if (n === 3) return `${local.slice(0, 2)}*${local[2]}@${domain}`;
+  if (n === 4) return `${local.slice(0, 3)}*${local[3]}@${domain}`;
+
+  // n >= 5 → abc***z@...
+  return `${local.slice(0, 3)}${"*".repeat(n - 4)}${local[n - 1]}@${domain}`;
+}
 
 export async function POST(req: Request) {
   try {
@@ -20,9 +32,12 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (error) return NextResponse.json({ error: "db_error" }, { status: 500 });
-    if (!data) return NextResponse.json({ found: false });
+    if (!data?.email) return NextResponse.json({ found: false });
 
-    return NextResponse.json({ found: true, maskedEmail: mask(data.email) });
+    return NextResponse.json({
+      found: true,
+      maskedEmail: maskEmailFirst3Last(data.email),
+    });
   } catch {
     return NextResponse.json({ error: "server_error" }, { status: 500 });
   }

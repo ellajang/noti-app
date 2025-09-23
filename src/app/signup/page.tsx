@@ -80,7 +80,7 @@ export default function SignUpPage() {
   const allFilled = [nickname, fullName, userId, password, birth].every(Boolean);
   const isFormValid = allFilled && isValidEmail && isValidPw && isPwMatch;
 
-  // “중복확인”
+  // 중복확인
   const checkDuplicate = async () => {
     if (!isValidEmail) {
       setIdMsg("올바른 이메일 형식이 아니에요.");
