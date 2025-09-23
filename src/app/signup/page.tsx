@@ -66,10 +66,12 @@ export default function SignUpPage() {
     const email = userId.trim().toLowerCase();
     const res = await mutateAsync({ email, password, nickname, fullName, birth });
     if (res?.needsEmailConfirm) {
-      setAlertMsg("가입 완료! 이메일로 전송된 인증 링크를 확인해 주세요.");
+      setAlertMsg(
+        "가입이 성공적으로 완료되었습니다! 계정을 사용하려면 이메일 인증을 완료해 주세요.",
+      );
       setOnAlertConfirm(() => () => router.push("/login"));
     } else {
-      setAlertMsg("가입 완료! 지금부터 바로 이용할 수 있어요.");
+      setAlertMsg("가입이 성공적으로 완료되었습니다! 지금부터 바로 이용할 수 있어요.");
       setOnAlertConfirm(() => () => router.push("/tasks"));
     }
     setAlertOpen(true);

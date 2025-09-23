@@ -27,6 +27,8 @@ export function translateSupabaseAuthError(e: ErrorLike): string {
       return "비밀번호가 너무 약해요. 8자 이상으로 설정해 주세요.";
     case "invalid_credentials":
       return "이메일 또는 비밀번호가 올바르지 않아요.";
+    case "email_not_confirmed":
+      return "계정을 사용하려면 이메일 인증을 먼저 완료해 주세요.";
     default: {
       const raw = getMessage(e).toLowerCase();
       if (/invalid.*email|email.*invalid/.test(raw)) {

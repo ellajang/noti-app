@@ -64,8 +64,18 @@ function HeaderContent() {
   return (
     <header className="sticky top-0 z-50 w-full bg-emerald-500 shadow-md">
       <div className="flex h-16 w-full items-center justify-between px-6">
-        {/* 좌측: 제목 */}
-        <h1 className="text-2xl font-bold text-white select-none">NOTI</h1>
+        <h1
+          onClick={() => {
+            if (user) {
+              router.push("/tasks");
+            } else {
+              router.push("/");
+            }
+          }}
+          className="cursor-pointer text-2xl font-bold text-white select-none"
+        >
+          NOTI
+        </h1>
 
         {/* 우측: 유저/버튼 */}
         <div className="flex items-center gap-3">

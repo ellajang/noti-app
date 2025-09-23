@@ -25,7 +25,7 @@ export default function IntroPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6 text-center">
+    <div className="mx-auto flex min-h-screen max-w-[560px] flex-col justify-center bg-white px-5 text-center">
       {/* 로고 */}
       <h1 className="mb-4 text-2xl font-bold text-emerald-500">NOTI</h1>
 
@@ -45,7 +45,7 @@ export default function IntroPage() {
       </p>
 
       {/* 시작 버튼 */}
-      <Button onClick={handleStart} disabled={loading} variant="primary" size="md" shape="rounded">
+      <Button onClick={handleStart} disabled={loading}>
         {loading ? "확인 중..." : "시작하기"}
       </Button>
     </div>

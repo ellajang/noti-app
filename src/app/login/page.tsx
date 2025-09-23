@@ -10,26 +10,10 @@ import Button from "@/components/common/Button";
 import { EMAIL_RE, LOGIN_AUTH_MESSAGES } from "../constants/auth";
 import { Spinner } from "@/components/common/Spinner";
 
-type ErrType = "format" | "credential" | "server" | "";
+type ErrType = "format" | "credential" | "server" | "unconfirmed" | "";
 
 function validateEmail(email: string) {
   return EMAIL_RE.test(email);
-}
-
-function classifySupabaseError(err: { message?: string; status?: number }): ErrType {
-  const msg = (err?.message || "").toLowerCase();
-  const status = err?.status ?? 0;
-  if (
-    status === 400 ||
-    /invalid (login )?credentials/.test(msg) ||
-    /invalid email or password/.test(msg)
-  ) {
-    return "credential";
-  }
-  if (status >= 500 || status === 0) {
-    return "server";
-  }
-  return "server";
 }
 
 export default function LoginPage() {
@@ -66,11 +50,21 @@ export default function LoginPage() {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        const type = classifySupabaseError(error);
-        raise(
-          type,
-          type === "credential" ? LOGIN_AUTH_MESSAGES.credential : LOGIN_AUTH_MESSAGES.server,
-        );
+        const code = error.code || "";
+        const raw = (error.message || "").toLowerCase();
+        const isCredential =
+          error.status === 400 ||
+          /invalid (login )?credentials/.test(raw) ||
+          /invalid email or password/.test(raw);
+        if (code === "email_not_confirmed") {
+          raise("unconfirmed", "계정을 사용하려면 이메일 인증을 먼저 완료해 주세요.");
+          return;
+        }
+        if (isCredential) {
+          raise("credential", LOGIN_AUTH_MESSAGES.credential);
+        } else {
+          raise("server", LOGIN_AUTH_MESSAGES.server);
+        }
         return;
       }
       if (data?.user) {
@@ -164,11 +158,11 @@ export default function LoginPage() {
 
           {/* 보조 링크 라인 */}
           <div className="mt-4 flex items-center justify-center gap-3 text-sm text-gray-600">
-            <Link href="/account/find-id" className="hover:underline">
+            <Link href="/account/find/id" className="hover:underline">
               아이디 찾기
             </Link>
             <span className="text-gray-300">|</span>
-            <Link href="/account/find-password" className="hover:underline">
+            <Link href="/account/find/pw" className="hover:underline">
               비밀번호 찾기
             </Link>
             <span className="text-gray-300">|</span>
