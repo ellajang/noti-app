@@ -1,9 +1,12 @@
 "use client";
+import { Suspense } from "react";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import Button from "@/components/common/Button";
 
-export default function VerifiedPage() {
+export const dynamic = "force-dynamic";
+
+function VerifiedInner() {
   const qs = useSearchParams();
   const router = useRouter();
 
@@ -44,5 +47,19 @@ export default function VerifiedPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function VerifiedPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-white">
+          <p>처리 중…</p>
+        </main>
+      }
+    >
+      <VerifiedInner />
+    </Suspense>
   );
 }
