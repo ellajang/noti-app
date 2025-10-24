@@ -1,5 +1,5 @@
 "use client";
 
 export default function TaskPage() {
-  return <main className="min-h-screen bg-white"></main>;
+  return <div className="bg-white p-6"></div>;
 }

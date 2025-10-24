@@ -81,7 +81,7 @@ export default function FindId() {
           </div>
         )}
         {result && (
-          <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {result.found ? (
               <>
                 가입하신 이메일은 <strong>{result.maskedEmail}</strong> 입니다.

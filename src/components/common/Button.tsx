@@ -6,7 +6,7 @@ import clsx from "clsx";
 type ButtonProps = {
   children: React.ReactNode;
   type?: "button" | "submit";
-  variant?: "primary" | "secondary" | "danger";
+  variant?: "primary" | "secondary" | "danger" | "outline";
   size?: "sm" | "md" | "lg";
   fullWidth?: boolean;
   disabled?: boolean;
@@ -43,6 +43,7 @@ export default function Button({
     primary: "bg-emerald-500 text-white hover:bg-emerald-600 shadow-md",
     secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300",
     danger: "bg-red-500 text-white hover:bg-red-600",
+    outline: "bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50",
   };
 
   // 모양 스타일

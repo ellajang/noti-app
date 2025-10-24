@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client"; // 기존 createClient (browser)
+import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Button from "@/components/common/Button";
 import { Spinner } from "@/components/common/Spinner";
@@ -18,7 +18,6 @@ export default function ResetPasswordPage() {
   const [ok, setOk] = useState(false);
   const [hasSession, setHasSession] = useState<boolean | null>(null);
 
-  // 1) 링크로 진입 시 세션이 생겼는지 확인
   useEffect(() => {
     const check = async () => {
       const { data, error } = await supabase.auth.getSession();
@@ -52,8 +51,8 @@ export default function ResetPasswordPage() {
   if (hasSession === false) {
     return (
       <main className="flex min-h-screen items-center justify-center px-5">
-        <div className="w-full max-w-md rounded-2xl border border-gray-100 p-6">
-          <h1 className="mb-3 text-lg font-bold">링크가 유효하지 않아요</h1>
+        <div className="w-full max-w-md p-6">
+          <h1 className="mb-3 text-lg font-bold">링크가 유효하지 않아요 : (</h1>
           <p className="mb-6 text-sm text-gray-700">
             링크가 만료되었거나 이미 사용되었을 수 있어요. 비밀번호 재설정 메일을 다시 요청해
             주세요.

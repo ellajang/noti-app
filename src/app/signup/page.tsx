@@ -12,6 +12,7 @@ import { RiKakaoTalkFill } from "react-icons/ri";
 import { Input } from "@/components/common/Input";
 import { Spinner } from "@/components/common/Spinner";
 import { AlertDialog } from "@/components/common/AlertDialog";
+import Link from "next/link";
 
 export default function SignUpPage() {
   const [nickname, setNickname] = useState("");
@@ -280,6 +281,14 @@ export default function SignUpPage() {
                 "가입하기"
               )}
             </Button>
+
+            {/* 로그인 페이지로 돌아가기 */}
+            <div className="mt-3 text-center text-sm text-gray-600">
+              이미 계정이 있으신가요?{" "}
+              <Link href="/login" className="font-medium text-emerald-600 hover:text-emerald-700">
+                로그인
+              </Link>
+            </div>
 
             <div className="mt-6 flex items-center gap-3">
               <span className="h-px flex-1 bg-gray-200" />

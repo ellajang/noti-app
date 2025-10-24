@@ -87,7 +87,7 @@ export default function FindPW() {
           </div>
         )}
         {sent && (
-          <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800">
+          <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
             입력하신 주소로 비밀번호 재설정 안내를 보냈습니다.
           </div>
         )}
