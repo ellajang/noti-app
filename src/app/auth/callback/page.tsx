@@ -33,10 +33,32 @@ function AuthCallback() {
 
       // Supabase 클라이언트 생성 (URL hash의 토큰 자동 처리)
       const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
 
+      // 1) 해시에서 토큰 추출
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+
+      let session = null;
+
+      // 2) 해시에 토큰이 있으면 먼저 setSession 해주기
+      if (accessToken && refreshToken) {
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (error) {
+          console.error("setSession error:", error);
+        } else {
+          session = data.session;
+        }
+      }
+
+      // 3) 그래도 세션이 없으면 마지막으로 getSession 한 번 더
+      if (!session) {
+        const { data } = await supabase.auth.getSession();
+        session = data.session;
+      }
       // 비밀번호 재설정 콜백인 경우 (쿼리 또는 해시에서)
       if (type === "recovery" || hashType === "recovery") {
         if (session) {
