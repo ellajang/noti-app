@@ -18,18 +18,9 @@ function AuthCallback() {
       const errDesc = qs.get("error_description");
       const type = qs.get("type") || "signup";
 
-      // URL 해시에서 type 확인 (Supabase가 #type=recovery로 전달)
       const hash = window.location.hash;
       const hashParams = new URLSearchParams(hash.substring(1));
       const hashType = hashParams.get("type");
-
-      // 디버깅 로그
-      console.log("Callback Debug:", {
-        queryType: type,
-        hashType: hashType,
-        fullHash: hash,
-        fullURL: window.location.href,
-      });
 
       if (err || errCode) {
         router.replace(
@@ -40,19 +31,22 @@ function AuthCallback() {
         return;
       }
 
-      // 비밀번호 재설정 콜백인 경우 (쿼리 또는 해시에서)
-      if (type === "recovery" || hashType === "recovery") {
-        console.log("Redirecting to reset-password page");
-        router.replace("/account/reset-password");
-        setChecking(false);
-        return;
-      }
-
-      // 소셜 로그인 콜백인지 확인 (세션이 있는지 체크)
+      // Supabase 클라이언트 생성 (URL hash의 토큰 자동 처리)
       const supabase = createClient();
       const {
         data: { session },
       } = await supabase.auth.getSession();
+
+      // 비밀번호 재설정 콜백인 경우 (쿼리 또는 해시에서)
+      if (type === "recovery" || hashType === "recovery") {
+        if (session) {
+          router.replace("/auth/reset-password");
+        } else {
+          router.replace("/auth/find/pw?error=invalid_link");
+        }
+        setChecking(false);
+        return;
+      }
 
       if (session) {
         const user = session.user;

@@ -34,8 +34,7 @@ export async function POST(req: Request) {
 
     // 재설정 메일 발송
     const SITE = process.env.NEXT_PUBLIC_SITE_URL!;
-    console.log("SITE URL:", SITE);
-    console.log("Redirect URL:", `${SITE}/auth/callback?type=recovery`);
+    const redirectUrl = `${SITE}/auth/callback?type=recovery`;
 
     const srv = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,7 +42,7 @@ export async function POST(req: Request) {
     );
 
     await srv.auth.resetPasswordForEmail(emailNorm, {
-      redirectTo: `${SITE}/auth/callback?type=recovery`,
+      redirectTo: redirectUrl,
     });
 
     return NextResponse.json({ sent: true });
