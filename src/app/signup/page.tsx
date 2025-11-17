@@ -2,7 +2,7 @@
 
 import Button from "@/components/common/Button";
 import CustomDatePicker from "@/components/common/CustomDatePicker";
-import { useSignUp } from "@/hooks/useSignUp";
+import { useSignUp } from "@/hooks/useAuth";
 import { createClient } from "@/lib/supabase/client";
 import { getRandomNickname } from "@woowa-babble/random-nickname";
 import Image from "next/image";
@@ -73,7 +73,7 @@ export default function SignUpPage() {
       setOnAlertConfirm(() => () => router.push("/login"));
     } else {
       setAlertMsg("가입이 성공적으로 완료되었습니다! 지금부터 바로 이용할 수 있어요.");
-      setOnAlertConfirm(() => () => router.push("/tasks"));
+      setOnAlertConfirm(() => () => router.push("/dashboard"));
     }
     setAlertOpen(true);
   };

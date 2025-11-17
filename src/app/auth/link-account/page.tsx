@@ -27,8 +27,7 @@ function LinkAccountInner() {
 
   const handleLink = async () => {
     setLoading(true);
-    // 이미 연동되어 있으므로 바로 진행
-    router.replace("/tasks");
+    router.replace("/dashboard");
   };
 
   const handleCancel = async () => {

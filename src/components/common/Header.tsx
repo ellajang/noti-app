@@ -67,7 +67,7 @@ function HeaderContent() {
         <h1
           onClick={() => {
             if (user) {
-              router.push("/tasks");
+              router.push("/dashboard");
             } else {
               router.push("/");
             }
@@ -81,12 +81,12 @@ function HeaderContent() {
         <div className="flex items-center gap-3">
           {user ? (
             <>
-              <span className="text-sm text-white/90">{nickname}</span>
+              <span className="text-xs text-white/90">{nickname}</span>
               <button
                 type="button"
                 onClick={logout}
                 disabled={loggingOut}
-                className="h-9 rounded-md bg-white px-4 text-emerald-600 transition-colors hover:bg-gray-100 disabled:opacity-60"
+                className="h-9 rounded-md bg-white px-3 text-sm text-emerald-600 transition-colors hover:bg-gray-100 disabled:opacity-60"
               >
                 {loggingOut ? <Spinner /> : "로그아웃"}
               </button>
@@ -95,7 +95,7 @@ function HeaderContent() {
             <button
               type="button"
               onClick={goLogin}
-              className="h-9 rounded-md bg-white px-4 text-emerald-600 transition-colors hover:bg-gray-100"
+              className="h-9 rounded-md bg-white px-3 text-xs text-emerald-600 transition-colors hover:bg-gray-100"
             >
               로그인
             </button>

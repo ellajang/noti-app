@@ -68,7 +68,7 @@ export default function LoginPage() {
         return;
       }
       if (data?.user) {
-        router.push("/tasks");
+        router.push("/dashboard");
       } else {
         raise("server", LOGIN_AUTH_MESSAGES.badResponse);
       }

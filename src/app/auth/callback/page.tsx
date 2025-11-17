@@ -111,7 +111,7 @@ function AuthCallback() {
         }
 
         // 일반 소셜 로그인 성공 → 메인 페이지로
-        router.replace("/tasks");
+        router.replace("/dashboard");
       } else {
         // 세션이 없으면 이메일 인증 콜백 → verified 페이지로
         router.replace(`/auth/verified?status=ok&type=${encodeURIComponent(type)}`);

@@ -9,7 +9,7 @@ export async function middleware(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (url.pathname.startsWith("/tasks") && !user) {
+  if (url.pathname.startsWith("/dashboard") && !user) {
     url.pathname = "/login";
     url.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
     return NextResponse.redirect(url);
@@ -19,5 +19,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/tasks/:path*"],
+  matcher: ["/dashboard/:path*"],
 };

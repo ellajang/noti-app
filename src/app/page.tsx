@@ -17,7 +17,7 @@ export default function IntroPage() {
     } = await supabase.auth.getUser();
 
     if (user) {
-      router.push("/tasks");
+      router.push("/dashboard");
     } else {
       router.push("/login");
     }
