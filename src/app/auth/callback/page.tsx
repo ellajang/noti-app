@@ -62,9 +62,9 @@ function AuthCallback() {
       // 비밀번호 재설정 콜백인 경우 (쿼리 또는 해시에서)
       if (type === "recovery" || hashType === "recovery") {
         if (session) {
-          router.replace("/auth/reset-password");
+          router.replace("/account/reset-password");
         } else {
-          router.replace("/auth/find/pw?error=invalid_link");
+          router.replace("/account/find/pw?error=invalid_link");
         }
         setChecking(false);
         return;
