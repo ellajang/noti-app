@@ -1,13 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { useState } from "react";
-import Button from "@/components/common/Button";
+import Button from "@/components/ui/Button";
+import { ROUTES } from "@/lib/constants/routes";
 
 export default function IntroPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [loading, setLoading] = useState(false);
 
   const handleStart = async () => {
@@ -17,9 +17,9 @@ export default function IntroPage() {
     } = await supabase.auth.getUser();
 
     if (user) {
-      router.push("/dashboard");
+      router.push(ROUTES.DASHBOARD);
     } else {
-      router.push("/login");
+      router.push(ROUTES.LOGIN);
     }
     setLoading(false);
   };

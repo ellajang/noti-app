@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { FaHome, FaCalendarAlt, FaCog } from "react-icons/fa";
+import { ROUTES } from "@/lib/constants/routes";
 
 export default function BottomNavBar() {
   const pathname = usePathname();
@@ -11,20 +12,20 @@ export default function BottomNavBar() {
     {
       icon: FaHome,
       label: "홈",
-      path: "/dashboard",
-      active: pathname === "/dashboard",
+      path: ROUTES.DASHBOARD,
+      active: pathname === ROUTES.DASHBOARD,
     },
     {
       icon: FaCalendarAlt,
       label: "일정",
-      path: "/tasks",
-      active: pathname === "/tasks",
+      path: ROUTES.TASKS.LIST,
+      active: pathname === ROUTES.TASKS.LIST,
     },
     {
       icon: FaCog,
       label: "설정",
-      path: "/account/setting",
-      active: pathname === "/account/setting",
+      path: ROUTES.ACCOUNT.SETTING,
+      active: pathname === ROUTES.ACCOUNT.SETTING,
     },
   ];
 

@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Button from "@/components/common/Button";
-import { Spinner } from "@/components/common/Spinner";
-import { Input } from "../common/Input";
-import CustomDatePicker from "../common/CustomDatePicker";
+import Button from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
+import { Input } from "@/components/ui/Input";
+import CustomDatePicker from "@/components/ui/CustomDatePicker";
+import { formatToYYYYMMDD } from "@/lib/utils/date";
 
 export default function FindId() {
   const [fullName, setFullName] = useState("");
@@ -60,10 +61,7 @@ export default function FindId() {
           isOpen={openPicker}
           value={birth ? new Date(birth) : undefined}
           onSelect={(date) => {
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, "0");
-            const d = String(date.getDate()).padStart(2, "0");
-            setBirth(`${y}-${m}-${d}`);
+            setBirth(formatToYYYYMMDD(date));
             setOpenPicker(false);
           }}
           onCancel={() => setOpenPicker(false)}

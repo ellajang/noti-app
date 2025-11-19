@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 export const dynamic = "force-dynamic";
 
@@ -30,9 +30,6 @@ function AuthCallback() {
         );
         return;
       }
-
-      // Supabase 클라이언트 생성 (URL hash의 토큰 자동 처리)
-      const supabase = createClient();
 
       // 1) 해시에서 토큰 추출
       const accessToken = hashParams.get("access_token");

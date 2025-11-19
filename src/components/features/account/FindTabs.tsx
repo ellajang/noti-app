@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Button from "@/components/common/Button";
+import Button from "@/components/ui/Button";
+import { ROUTES } from "@/lib/constants/routes";
 
 type TabKey = "id" | "pw";
 
@@ -13,12 +14,12 @@ export default function FindTabs() {
 
   useEffect(() => {
     if (pathname?.endsWith("/pw")) setTab("pw");
-    else setTab("id"); // /account/find 또는 /account/find/id
+    else setTab("id");
   }, [pathname]);
 
   const go = (key: TabKey) => {
     setTab(key);
-    router.push(key === "id" ? "/account/find/id" : "/account/find/pw");
+    router.push(key === "id" ? ROUTES.ACCOUNT.FIND_ID : ROUTES.ACCOUNT.FIND_PW);
   };
 
   return (

@@ -3,12 +3,12 @@
 import { FaRegClock } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { Task } from "@/types/tasks";
-import BottomNavBar from "@/components/common/BottomNavBar";
-import FloatingActionButton from "@/components/common/FloatingActionButton";
-
-const supabase = createClient();
+import BottomNavBar from "@/components/layout/BottomNavBar";
+import FloatingActionButton from "@/components/ui/FloatingActionButton";
+import { getTodayYYYYMMDD } from "@/lib/utils/date";
+import { ROUTES } from "@/lib/constants/routes";
 
 function formatTimeParts(timeStr: string | null) {
   if (!timeStr) {
@@ -33,23 +33,19 @@ async function fetchTodayTasks(): Promise<Task[]> {
     error: userError,
   } = await supabase.auth.getUser();
 
-  // 로그인 안 되어 있거나 에러면 그냥 "일정 없음" 처리
   if (userError || !user) {
     return [];
   }
 
-  const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  const today = getTodayYYYYMMDD();
 
   const { data, error } = await supabase
     .from("tasks")
     .select("*")
-    .eq("user_id", user.id)
     .eq("scheduled_date", today)
     .order("scheduled_time", { ascending: true, nullsFirst: true });
-
   if (error) {
-    // 디버깅 필요할 때만 열어두면 됨
-    // console.error("tasks query error:", error);
+
     return [];
   }
 
@@ -65,7 +61,7 @@ export default function DashBoardPage() {
   });
 
   const handleAddTask = () => {
-    router.push("/tasks/add");
+    router.push(ROUTES.TASKS.ADD);
   };
 
   return (
@@ -80,7 +76,7 @@ export default function DashBoardPage() {
               type="button"
               onClick={handleAddTask}
               aria-label="일정 추가"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-500 text-emerald-500 transition hover:bg-emerald-50"
+              className="cursor-pointer inline-flex items-center justify-center text-emerald-500 transition hover:bg-emerald-50"
             >
               <span className="text-xl leading-none">＋</span>
             </button>
@@ -91,7 +87,7 @@ export default function DashBoardPage() {
             <button
               type="button"
               onClick={handleAddTask}
-              className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition hover:bg-emerald-200"
+              className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition hover:bg-emerald-200 cursor-pointer"
               style={{ backgroundColor: "#e3f1dcff" }}
             >
               <div className="flex h-9 w-9 items-center justify-center">
@@ -148,12 +144,20 @@ export default function DashBoardPage() {
                       <div className="mt-4 flex gap-2">
                         <button
                           type="button"
+                          onClick={() => {
+                            // TODO: 완료 처리 로직 구현
+                            console.log("완료:", task.id);
+                          }}
                           className="flex-1 rounded-full bg-emerald-500 px-3 py-2 text-xs font-medium text-white transition hover:bg-emerald-600"
                         >
                           완료
                         </button>
                         <button
                           type="button"
+                          onClick={() => {
+                            // TODO: 실행 못함 처리 로직 구현
+                            console.log("실행 못함:", task.id);
+                          }}
                           className="flex-1 rounded-full border border-red-300 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 transition hover:bg-red-100"
                         >
                           실행 못함

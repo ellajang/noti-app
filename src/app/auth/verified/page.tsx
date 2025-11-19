@@ -2,7 +2,9 @@
 import { Suspense } from "react";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import Button from "@/components/common/Button";
+
+import { ROUTES } from "@/lib/constants/routes";
+import Button from "@/components/ui/Button";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +34,7 @@ function VerifiedInner() {
                 ? "비밀번호 재설정 인증이 완료되었어요. 로그인 후 새 비밀번호를 사용하세요."
                 : "이메일 인증이 완료되었어요. 이제 로그인할 수 있습니다."}
             </p>
-            <Button fullWidth onClick={() => router.push("/login")}>
+            <Button fullWidth onClick={() => router.push(ROUTES.LOGIN)}>
               로그인하러 가기
             </Button>
           </>
@@ -40,7 +42,7 @@ function VerifiedInner() {
           <>
             <h1 className="mb-4 text-xl font-bold">인증에 실패했어요 :(</h1>
             <p className="mb-6 text-sm">{failMsg}</p>
-            <Button fullWidth onClick={() => router.push("/login")}>
+            <Button fullWidth onClick={() => router.push(ROUTES.LOGIN)}>
               로그인으로 돌아가기
             </Button>
           </>

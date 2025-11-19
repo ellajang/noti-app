@@ -1,5 +1,5 @@
-import FindId from "@/components/account/FIndID";
-import FindTabs from "@/components/account/FindTabs";
+import FindId from "@/components/features/account/FindID";
+import FindTabs from "@/components/features/account/FindTabs";
 
 export default function Page() {
   return (

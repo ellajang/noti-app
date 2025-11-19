@@ -1,161 +1,106 @@
 "use client";
 
-import Button from "@/components/common/Button";
-import CustomDatePicker from "@/components/common/CustomDatePicker";
+import Button from "@/components/ui/Button";
+import CustomDatePicker from "@/components/ui/CustomDatePicker";
 import { useSignUp } from "@/hooks/useAuth";
-import { createClient } from "@/lib/supabase/client";
-import { getRandomNickname } from "@woowa-babble/random-nickname";
-import Image from "next/image";
+import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { useState, useMemo } from "react";
-import { RiKakaoTalkFill } from "react-icons/ri";
-import { Input } from "@/components/common/Input";
-import { Spinner } from "@/components/common/Spinner";
-import { AlertDialog } from "@/components/common/AlertDialog";
+import { Input } from "@/components/ui/Input";
+import { Spinner } from "@/components/ui/Spinner";
+import { AlertDialog } from "@/components/ui/AlertDialog";
 import Link from "next/link";
+import SocialLoginButtons from "@/components/features/auth/SocialLoginButtons";
+import { formatToYYYYMMDD } from "@/lib/utils/date";
+import { ROUTES } from "@/lib/constants/routes";
+import { useSignupForm } from "@/hooks/useSignupForm";
+import { useEmailValidation } from "@/hooks/useEmailValidation";
+import { useNicknameGenerator } from "@/hooks/useNicknameGenerator";
+import { useAlertDialog } from "@/hooks/useAlertDialog";
+import type { SignupFormData } from "@/lib/schemas/signup";
 
 export default function SignUpPage() {
-  const [nickname, setNickname] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [userId, setUserId] = useState(""); // 이메일
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [birth, setBirth] = useState("");
-  const [openPicker, setOpenPicker] = useState(false);
-  const [nickLoading, setNickLoading] = useState(false);
-
-  // 알림 모달
-  const [alertOpen, setAlertOpen] = useState(false);
-  const [alertMsg, setAlertMsg] = useState("");
-  const [onAlertConfirm, setOnAlertConfirm] = useState<() => void>(() => () => {});
-
-  const supabase = createClient();
   const router = useRouter();
   const { mutateAsync, isPending } = useSignUp();
 
-  const isValidEmail = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userId), [userId]);
-  const isValidPw = useMemo(() => password.length >= 8, [password]);
-  const isPwMatch = useMemo(() => confirm === password, [confirm, password]);
-  // 이메일 중복 확인 UX
-  const [idChecking, setIdChecking] = useState(false);
-  const [idChecked, setIdChecked] = useState(false);
-  const [idAvailable, setIdAvailable] = useState<boolean | null>(null);
-  const [idMsg, setIdMsg] = useState("");
+  // Custom hooks
+  const { form, openPicker, setOpenPicker } = useSignupForm();
+  const { register, handleSubmit, formState, setValue, watch } = form;
+  const { errors, isValid } = formState;
 
+  const { idChecking, idChecked, idAvailable, idMsg, resetValidation, validateEmail } =
+    useEmailValidation();
+
+  const { nickLoading, generateRandomNickname } = useNicknameGenerator();
+  const { alertOpen, alertMsg, showAlert, closeAlert } = useAlertDialog();
+
+  // Watch values
+  const userId = watch("userId");
+  const birth = watch("birth");
+
+  // Handlers
   const onChangeEmail = (v: string) => {
-    setUserId(v);
-    setIdChecked(false);
-    setIdAvailable(null);
-    setIdMsg("");
-  };
-
-  // 최종 중복확인
-  const ensureEmailAvailable = async () => {
-    const email = userId.trim().toLowerCase();
-    const res = await fetch(`/api/user/check-id?email=${encodeURIComponent(email)}`, {
-      cache: "no-store",
-    });
-    const ct = res.headers.get("content-type") || "";
-    const data = ct.includes("application/json") ? await res.json() : null;
-
-    if (!res.ok) throw new Error(data?.message || `중복 확인 실패 (HTTP ${res.status})`);
-    if (data?.exists) throw new Error("이미 사용 중인 이메일이에요.");
-  };
-
-  // 가입 실행
-  const doSubmit = async () => {
-    const email = userId.trim().toLowerCase();
-    const res = await mutateAsync({ email, password, nickname, fullName, birth });
-    if (res?.needsEmailConfirm) {
-      setAlertMsg(
-        "가입이 성공적으로 완료되었습니다! 계정을 사용하려면 이메일 인증을 완료해 주세요.",
-      );
-      setOnAlertConfirm(() => () => router.push("/login"));
-    } else {
-      setAlertMsg("가입이 성공적으로 완료되었습니다! 지금부터 바로 이용할 수 있어요.");
-      setOnAlertConfirm(() => () => router.push("/dashboard"));
-    }
-    setAlertOpen(true);
-  };
-
-  const allFilled = [nickname, fullName, userId, password, birth].every(Boolean);
-  const isFormValid = allFilled && isValidEmail && isValidPw && isPwMatch;
-
-  // 중복확인
-  const checkDuplicate = async () => {
-    if (!isValidEmail) {
-      setIdMsg("올바른 이메일 형식이 아니에요.");
-      setIdChecked(false);
-      setIdAvailable(null);
-      return;
-    }
-    setIdChecking(true);
-    setIdMsg("");
-    try {
-      await ensureEmailAvailable();
-      setIdAvailable(true);
-      setIdChecked(true);
-      setIdMsg("사용 가능한 이메일입니다.");
-      if (isFormValid && !isPending) {
-        await doSubmit();
-      }
-    } catch (e: unknown) {
-      setIdAvailable(false);
-      setIdChecked(true);
-      const message =
-        e instanceof Error ? e.message : "중복 확인에 실패했어요. 잠시 후 다시 시도해 주세요.";
-      setIdMsg(message);
-    } finally {
-      setIdChecking(false);
-    }
+    setValue("userId", v, { shouldValidate: true });
+    resetValidation();
   };
 
   const pickRandomNickname = async () => {
-    setNickLoading(true);
-    try {
-      const res = await fetch("/api/nickname/suggest", { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.nickname) {
-          setNickname(data.nickname);
-          return;
-        }
-      }
-      const base = getRandomNickname("animals");
-      const tail = Math.floor(100 + Math.random() * 900);
-      setNickname(`${base}${tail}`);
-    } catch {
-      const base = getRandomNickname("animals");
-      const tail = Math.floor(100 + Math.random() * 900);
-      setNickname(`${base}${tail}`);
-    } finally {
-      setNickLoading(false);
+    const newNickname = await generateRandomNickname();
+    setValue("nickname", newNickname, { shouldValidate: true });
+  };
+
+  const doSubmit = async (data: SignupFormData) => {
+    const res = await mutateAsync({
+      email: data.userId.trim().toLowerCase(),
+      password: data.password,
+      nickname: data.nickname,
+      fullName: data.fullName,
+      birth: data.birth,
+    });
+
+    if (res?.needsEmailConfirm) {
+      showAlert(
+        "가입이 성공적으로 완료되었습니다! 계정을 사용하려면 이메일 인증을 완료해 주세요.",
+        () => router.push(ROUTES.LOGIN),
+      );
+    } else {
+      showAlert("가입이 성공적으로 완료되었습니다! 지금부터 바로 이용할 수 있어요.", () =>
+        router.push(ROUTES.DASHBOARD),
+      );
     }
   };
 
-  // 제출
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isFormValid || isPending) return;
+  const checkDuplicate = async () => {
+    const isValidEmail = !errors.userId && userId.length > 0;
+    await validateEmail(userId, isValidEmail);
+  };
+
+  const onSubmit = async (data: SignupFormData) => {
+    if (isPending) return;
+
     try {
-      await ensureEmailAvailable();
-      setIdAvailable(true);
-      setIdChecked(true);
-      setIdMsg("사용 가능한 이메일입니다.");
-      await doSubmit();
+      const isValidEmail = !errors.userId && userId.length > 0;
+      const isEmailValid = await validateEmail(userId, isValidEmail);
+      if (isEmailValid) {
+        await doSubmit(data);
+      }
     } catch (err: unknown) {
-      setIdAvailable(false);
-      setIdChecked(true);
       const message = err instanceof Error ? err.message : "가입 중 오류가 발생했어요.";
-      setIdMsg(message);
+      showAlert(message);
     }
   };
 
   const snsSignIn = async (provider: "kakao" | "google") => {
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: `${location.origin}/auth/callback` },
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: `${location.origin}/auth/callback` },
+      });
+      if (error) {
+        showAlert(`${provider === "kakao" ? "카카오" : "구글"} 로그인에 실패했습니다. 다시 시도해 주세요.`);
+      }
+    } catch {
+      showAlert("SNS 로그인 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    }
   };
 
   return (
@@ -166,13 +111,13 @@ export default function SignUpPage() {
         </h1>
 
         <div className="rounded-2xl bg-white">
-          <form onSubmit={onSubmit} noValidate className="space-y-3">
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-3">
             {/* 닉네임 */}
             <Input
               id="nickname"
               placeholder="닉네임"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
+              {...register("nickname")}
+              error={errors.nickname?.message}
               size="md"
               rightSlot={
                 <Button
@@ -191,8 +136,8 @@ export default function SignUpPage() {
             <Input
               id="fullName"
               placeholder="이름"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              {...register("fullName")}
+              error={errors.fullName?.message}
             />
 
             {/* 이메일 + 중복확인 */}
@@ -200,24 +145,18 @@ export default function SignUpPage() {
               id="userId"
               type="email"
               placeholder="example@email.com"
-              value={userId}
+              {...register("userId")}
               onChange={(e) => onChangeEmail(e.target.value)}
               error={
-                userId && !isValidEmail
-                  ? "올바른 이메일 형식이 아니에요."
-                  : idChecked && idAvailable === false
-                    ? idMsg
-                    : undefined
+                errors.userId?.message || (idChecked && idAvailable === false ? idMsg : undefined)
               }
-              hint={
-                idChecked && idAvailable === true ? idMsg : !idChecked && idMsg ? idMsg : undefined
-              }
+              hint={idChecked && idAvailable === true ? idMsg : undefined}
               rightSlot={
                 <Button
                   type="button"
                   size="lg"
                   onClick={checkDuplicate}
-                  disabled={!isValidEmail || idChecking}
+                  disabled={!!errors.userId || !userId || idChecking}
                   className="text-[13px] leading-none whitespace-nowrap"
                 >
                   {idChecking ? <Spinner /> : "중복 확인"}
@@ -231,36 +170,39 @@ export default function SignUpPage() {
               type="password"
               autoComplete="new-password"
               placeholder="비밀번호 (8자 이상)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value.replace(/\s/g, ""))}
-              error={password && !isValidPw ? "비밀번호는 8자 이상이어야 해요." : undefined}
+              {...register("password")}
+              onChange={(e) =>
+                setValue("password", e.target.value.replace(/\s/g, ""), { shouldValidate: true })
+              }
+              error={errors.password?.message}
             />
             <Input
               id="confirm"
               type="password"
               autoComplete="new-password"
               placeholder="비밀번호 확인"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value.replace(/\s/g, ""))}
-              error={confirm && !isPwMatch ? "비밀번호가 일치하지 않습니다." : undefined}
+              {...register("confirm")}
+              onChange={(e) =>
+                setValue("confirm", e.target.value.replace(/\s/g, ""), { shouldValidate: true })
+              }
+              error={errors.confirm?.message}
             />
-            {/* 생년월일 (읽기 전용 인풋 + 선택 버튼) */}
+
+            {/* 생년월일 */}
             <Input
               id="birth"
               placeholder="생년월일"
-              value={birth}
+              {...register("birth")}
               readOnly
               onClick={() => setOpenPicker(true)}
+              error={errors.birth?.message}
             />
 
             <CustomDatePicker
               isOpen={openPicker}
               value={birth ? new Date(birth) : undefined}
               onSelect={(date) => {
-                const y = date.getFullYear();
-                const m = String(date.getMonth() + 1).padStart(2, "0");
-                const d = String(date.getDate()).padStart(2, "0");
-                setBirth(`${y}-${m}-${d}`);
+                setValue("birth", formatToYYYYMMDD(date), { shouldValidate: true });
                 setOpenPicker(false);
               }}
               onCancel={() => setOpenPicker(false)}
@@ -271,7 +213,7 @@ export default function SignUpPage() {
               variant="primary"
               size="lg"
               fullWidth
-              disabled={!isFormValid || isPending}
+              disabled={!isValid || isPending}
             >
               {isPending ? (
                 <div className="flex w-full justify-center">
@@ -285,7 +227,7 @@ export default function SignUpPage() {
             {/* 로그인 페이지로 돌아가기 */}
             <div className="mt-3 text-center text-sm text-gray-600">
               이미 계정이 있으신가요?{" "}
-              <Link href="/login" className="font-medium text-emerald-600 hover:text-emerald-700">
+              <Link href={ROUTES.LOGIN} className="font-medium text-emerald-600 hover:text-emerald-700">
                 로그인
               </Link>
             </div>
@@ -296,24 +238,8 @@ export default function SignUpPage() {
               <span className="h-px flex-1 bg-gray-200" />
             </div>
 
-            <div className="mt-4 mb-6 flex items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => snsSignIn("kakao")}
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-[#FEE500] hover:brightness-95"
-                aria-label="카카오 가입"
-              >
-                <RiKakaoTalkFill size={24} color="#3C1E1E" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => snsSignIn("google")}
-                aria-label="구글로 가입"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-400 hover:brightness-95"
-              >
-                <Image src="/images/icons/google.svg" alt="" width={30} height={30} />
-              </button>
+            <div className="mt-4 mb-6">
+              <SocialLoginButtons type="signup" onSocialLogin={snsSignIn} />
             </div>
           </form>
         </div>
@@ -323,10 +249,7 @@ export default function SignUpPage() {
         title="알림"
         message={alertMsg}
         showCancel={false}
-        onConfirm={() => {
-          setAlertOpen(false);
-          onAlertConfirm();
-        }}
+        onConfirm={closeAlert}
       />
     </main>
   );

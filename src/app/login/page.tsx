@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import { createClient } from "@/lib/supabase/client";
-import { RiKakaoTalkFill } from "react-icons/ri";
-import Button from "@/components/common/Button";
+import { supabase } from "@/lib/supabase/client";
+import Button from "@/components/ui/Button";
 import { EMAIL_RE, LOGIN_AUTH_MESSAGES } from "../constants/auth";
-import { Spinner } from "@/components/common/Spinner";
+import { Spinner } from "@/components/ui/Spinner";
+import SocialLoginButtons from "@/components/features/auth/SocialLoginButtons";
+import { ROUTES } from "@/lib/constants/routes";
+import { Input } from "@/components/ui/Input";
 
 type ErrType = "format" | "credential" | "server" | "unconfirmed" | "";
 
@@ -23,7 +24,6 @@ export default function LoginPage() {
   const [errMsg, setErrMsg] = useState("");
   const [errType, setErrType] = useState<ErrType>("");
   const router = useRouter();
-  const supabase = createClient();
 
   const raise = (type: ErrType, message: string) => {
     setErrType(type);
@@ -58,6 +58,7 @@ export default function LoginPage() {
           /invalid email or password/.test(raw);
         if (code === "email_not_confirmed") {
           raise("unconfirmed", "계정을 사용하려면 이메일 인증을 먼저 완료해 주세요.");
+          setLoading(false);
           return;
         }
         if (isCredential) {
@@ -65,35 +66,40 @@ export default function LoginPage() {
         } else {
           raise("server", LOGIN_AUTH_MESSAGES.server);
         }
+        setLoading(false);
         return;
       }
       if (data?.user) {
-        router.push("/dashboard");
+        // 성공 시 페이지 전환될 때까지 spinner 유지
+        router.push(ROUTES.DASHBOARD);
       } else {
         raise("server", LOGIN_AUTH_MESSAGES.badResponse);
+        setLoading(false);
       }
     } catch {
       raise("server", LOGIN_AUTH_MESSAGES.network);
-    } finally {
       setLoading(false);
     }
   };
 
   // SNS 로그인 핸들러
   const snsSignIn = async (provider: "kakao" | "google") => {
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${location.origin}/auth/callback`,
-      },
-    });
+    try {
+      setErrMsg("");
+      setErrType("");
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${location.origin}/auth/callback`,
+        },
+      });
+      if (error) {
+        raise("server", `${provider === "kakao" ? "카카오" : "구글"} 로그인에 실패했습니다. 다시 시도해 주세요.`);
+      }
+    } catch {
+      raise("server", "SNS 로그인 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    }
   };
-
-  // 공통 인풋 스타일
-  const inputBase =
-    "w-full rounded-xl border bg-white px-4 py-3 text-[15px] outline-none ring-0 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-emerald-200 autofill:bg-white autofill:text-gray-900";
-  const borderNormal = "border-gray-300 focus:border-emerald-500";
-  const borderError = "border-red-400 focus:border-red-500 focus:ring-red-200";
 
   return (
     <main className="min-h-screen bg-white">
@@ -109,39 +115,29 @@ export default function LoginPage() {
           {/* 폼 */}
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
             {/* 이메일 */}
-            <div>
-              <label htmlFor="email" className="sr-only">
-                이메일
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                placeholder="이메일"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={`${inputBase} ${errType === "format" ? borderError : borderNormal}`}
-              />
-            </div>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="이메일"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={errType === "format" ? errMsg : undefined}
+            />
 
             {/* 비밀번호 */}
-            <div>
-              <label htmlFor="password" className="sr-only">
-                비밀번호
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                placeholder="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={`${inputBase} ${errType === "credential" ? borderError : borderNormal}`}
-              />
-            </div>
+            <Input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              placeholder="비밀번호"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={errType === "credential" ? errMsg : undefined}
+            />
 
-            {/* 에러 메시지 */}
-            {errMsg && (
+            {/* 서버 에러 메시지 */}
+            {errMsg && (errType === "server" || errType === "unconfirmed") && (
               <div
                 className={`rounded-lg px-3 py-2 text-sm ${
                   errType === "server"
@@ -158,15 +154,15 @@ export default function LoginPage() {
 
           {/* 보조 링크 라인 */}
           <div className="mt-4 flex items-center justify-center gap-3 text-sm text-gray-600">
-            <Link href="/account/find/id" className="hover:underline">
+            <Link href={ROUTES.ACCOUNT.FIND_ID} className="hover:underline">
               아이디 찾기
             </Link>
             <span className="text-gray-300">|</span>
-            <Link href="/account/find/pw" className="hover:underline">
+            <Link href={ROUTES.ACCOUNT.FIND_PW} className="hover:underline">
               비밀번호 찾기
             </Link>
             <span className="text-gray-300">|</span>
-            <Link href="/signup" className="hover:underline">
+            <Link href={ROUTES.SIGNUP} className="hover:underline">
               회원가입
             </Link>
           </div>
@@ -178,27 +174,9 @@ export default function LoginPage() {
             <span className="h-px flex-1 bg-gray-200" />
           </div>
 
-          {/* SNS 버튼 3종 */}
-          <div className="mt-4 flex items-center justify-center gap-3">
-            {/* 카카오 */}
-            <button
-              type="button"
-              onClick={() => snsSignIn("kakao")}
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-[#FEE500] hover:brightness-95"
-              aria-label="카카오 로그인"
-            >
-              <RiKakaoTalkFill size={24} color="#3C1E1E" />
-            </button>
-
-            {/* 구글 */}
-            <button
-              type="button"
-              onClick={() => snsSignIn("google")}
-              aria-label="구글로 로그인"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-400 hover:brightness-95"
-            >
-              <Image src="/images/icons/google.svg" alt="" width={30} height={30} />
-            </button>
+          {/* SNS 버튼 */}
+          <div className="mt-4">
+            <SocialLoginButtons type="login" onSocialLogin={snsSignIn} />
           </div>
         </div>
       </section>

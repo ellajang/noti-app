@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { FaArrowLeft } from "react-icons/fa";
-import BottomNavBar from "@/components/common/BottomNavBar";
+import BottomNavBar from "@/components/layout/BottomNavBar";
 import { RecurrenceType } from "@/types/tasks";
-import CustomDatePicker from "@/components/common/CustomDatePicker";
-import CustomTimePicker from "@/components/common/CustomTimePicker";
-import { Input } from "@/components/common/Input";
+import CustomDatePicker from "@/components/ui/CustomDatePicker";
+import CustomTimePicker from "@/components/ui/CustomTimePicker";
+import { Input } from "@/components/ui/Input";
+import { AlertDialog } from "@/components/ui/AlertDialog";
+import { formatToYYYYMMDD } from "@/lib/utils/date";
 
 export default function AddTaskPage() {
   const router = useRouter();
-  const supabase = createClient();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -24,11 +25,28 @@ export default function AddTaskPage() {
   const [recurrence, setRecurrence] = useState<RecurrenceType>("none");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // AlertDialog 상태
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMsg, setAlertMsg] = useState("");
+  const [onAlertConfirm, setOnAlertConfirm] = useState<() => void>(() => () => setAlertOpen(false));
+
+  // 피커 열렸을 때 body 스크롤 막기
+  useEffect(() => {
+    if (openPicker || openTimePicker) {
+      document.body.style.overflow = "hidden";
+
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [openPicker, openTimePicker]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title || !scheduledDate) {
-      alert("제목과 날짜는 필수입니다.");
+      setAlertMsg("제목과 날짜는 필수입니다.");
+      setAlertOpen(true);
       return;
     }
 
@@ -40,8 +58,12 @@ export default function AddTaskPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        alert("로그인이 필요합니다.");
-        router.push("/login");
+        setAlertMsg("로그인이 필요합니다.");
+        setOnAlertConfirm(() => () => {
+          setAlertOpen(false);
+          router.push("/login");
+        });
+        setAlertOpen(true);
         return;
       }
 
@@ -58,7 +80,8 @@ export default function AddTaskPage() {
 
       if (error) {
         console.error("Task creation error:", error);
-        alert("일정 추가에 실패했습니다.");
+        setAlertMsg("일정 추가에 실패했습니다.");
+        setAlertOpen(true);
         return;
       }
 
@@ -67,7 +90,8 @@ export default function AddTaskPage() {
       router.refresh();
     } catch (err) {
       console.error("Unexpected error:", err);
-      alert("예상치 못한 오류가 발생했습니다.");
+      setAlertMsg("예상치 못한 오류가 발생했습니다.");
+      setAlertOpen(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -141,10 +165,7 @@ export default function AddTaskPage() {
                 isOpen={openPicker}
                 value={scheduledDate ? new Date(scheduledDate) : undefined}
                 onSelect={(date) => {
-                  const y = date.getFullYear();
-                  const m = String(date.getMonth() + 1).padStart(2, "0");
-                  const d = String(date.getDate()).padStart(2, "0");
-                  setScheduledDate(`${y}-${m}-${d}`);
+                  setScheduledDate(formatToYYYYMMDD(date));
                   setOpenPicker(false);
                 }}
                 onCancel={() => setOpenPicker(false)}
@@ -240,6 +261,12 @@ export default function AddTaskPage() {
         </form>
       </div>
       <BottomNavBar />
+      <AlertDialog
+        open={alertOpen}
+        message={alertMsg}
+        onConfirm={onAlertConfirm}
+        onClose={() => setAlertOpen(false)}
+      />
     </div>
   );
 }

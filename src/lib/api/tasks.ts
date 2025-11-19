@@ -1,5 +1,6 @@
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import type { Task, TaskStatus } from "@/types/tasks";
+import { getTodayYYYYMMDD } from "@/lib/utils/date";
 
 /**
  * Task 생성 입력 타입
@@ -30,8 +31,6 @@ export type TaskFilters = {
  * 모든 Tasks 가져오기 (필터 옵션)
  */
 export async function getTasks(filters?: TaskFilters): Promise<Task[]> {
-  const supabase = createClient();
-
   let query = supabase
     .from("tasks")
     .select("*")
@@ -59,7 +58,7 @@ export async function getTasks(filters?: TaskFilters): Promise<Task[]> {
  * 오늘 날짜의 Tasks 가져오기
  */
 export async function getTodayTasks(): Promise<Task[]> {
-  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const today = getTodayYYYYMMDD();
   return getTasks({ date: today });
 }
 
@@ -67,8 +66,6 @@ export async function getTodayTasks(): Promise<Task[]> {
  * 특정 Task 가져오기
  */
 export async function getTask(id: string): Promise<Task> {
-  const supabase = createClient();
-
   const { data, error } = await supabase.from("tasks").select("*").eq("id", id).single();
 
   if (error) throw error;
@@ -80,8 +77,6 @@ export async function getTask(id: string): Promise<Task> {
  * Task 생성
  */
 export async function createTask(input: CreateTaskInput): Promise<Task> {
-  const supabase = createClient();
-
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError) throw userError;
   if (!userData.user) throw new Error("사용자 인증이 필요합니다.");
@@ -109,8 +104,6 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
  * Task 수정
  */
 export async function updateTask(id: string, input: UpdateTaskInput): Promise<Task> {
-  const supabase = createClient();
-
   const { data, error } = await supabase
     .from("tasks")
     .update({
@@ -137,8 +130,6 @@ export async function updateTaskStatus(id: string, status: TaskStatus): Promise<
  * Task 삭제
  */
 export async function deleteTask(id: string): Promise<void> {
-  const supabase = createClient();
-
   const { error } = await supabase.from("tasks").delete().eq("id", id);
 
   if (error) throw error;

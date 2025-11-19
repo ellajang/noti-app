@@ -1,4 +1,5 @@
-export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// validation.ts의 EMAIL_REGEX를 re-export
+export { EMAIL_REGEX as EMAIL_RE } from "@/lib/utils/validation";
 
 export const LOGIN_AUTH_MESSAGES = {
   emailFormat: "올바른 이메일 주소를 입력해주세요.",

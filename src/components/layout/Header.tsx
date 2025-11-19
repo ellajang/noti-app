@@ -3,12 +3,11 @@
 
 import { Suspense, useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { Spinner } from "./Spinner";
+import { Spinner } from "../ui/Spinner";
 
 function HeaderContent() {
-  const supabase = createClient();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -38,7 +37,7 @@ function HeaderContent() {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [supabase.auth]);
+  }, []);
 
   const logout = useCallback(async () => {
     try {
@@ -49,7 +48,7 @@ function HeaderContent() {
     } finally {
       setLoggingOut(false);
     }
-  }, [router, supabase]);
+  }, [router]);
 
   const goLogin = useCallback(() => {
     router.push(`/login?redirect=${encodeURIComponent(current)}`);

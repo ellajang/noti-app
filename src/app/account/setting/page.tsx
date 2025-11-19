@@ -1,6 +1,6 @@
 "use client";
 
-import BottomNavBar from "@/components/common/BottomNavBar";
+import BottomNavBar from "@/components/layout/BottomNavBar";
 
 export default function Page() {
   return (

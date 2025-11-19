@@ -29,7 +29,7 @@ export default function Button({
   className,
 }: ButtonProps) {
   const baseStyle =
-    "font-medium transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed";
+    "font-medium transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed cursor-pointer";
 
   // 버튼 크기
   const sizeStyles = {

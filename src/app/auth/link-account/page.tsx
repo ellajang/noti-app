@@ -2,9 +2,9 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import Button from "@/components/common/Button";
-import { Spinner } from "@/components/common/Spinner";
+import { supabase } from "@/lib/supabase/client";
+import Button from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
 
 export const dynamic = "force-dynamic";
 
@@ -33,8 +33,6 @@ function LinkAccountInner() {
   const handleCancel = async () => {
     setUnlinking(true);
     try {
-      const supabase = createClient();
-
       // 현재 사용자 정보 가져오기
       const {
         data: { user },
@@ -68,7 +66,6 @@ function LinkAccountInner() {
       router.replace("/login");
     } catch (err) {
       console.error("Cancel linking failed:", err);
-      const supabase = createClient();
       await supabase.auth.signOut();
       router.replace("/login");
     } finally {

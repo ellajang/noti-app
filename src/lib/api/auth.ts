@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { translateSupabaseAuthError } from "@/lib/errors/translateSupabaseAuthError";
 import type { Provider, User } from "@supabase/supabase-js";
 
@@ -33,7 +33,6 @@ export type SignInInput = {
  * 이메일/비밀번호 회원가입
  */
 export async function signUp(input: SignUpInput): Promise<SignUpResult> {
-  const supabase = createClient();
   const { email, password, nickname, fullName, birth } = input;
 
   const { data, error } = await supabase.auth.signUp({
@@ -64,7 +63,6 @@ export async function signUp(input: SignUpInput): Promise<SignUpResult> {
  * 이메일/비밀번호 로그인
  */
 export async function signIn(input: SignInInput) {
-  const supabase = createClient();
   const { email, password } = input;
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -80,7 +78,6 @@ export async function signIn(input: SignInInput) {
  * 로그아웃
  */
 export async function signOut() {
-  const supabase = createClient();
   const { error } = await supabase.auth.signOut();
 
   if (error) throw error;
@@ -90,8 +87,6 @@ export async function signOut() {
  * OAuth 로그인 (카카오, 구글)
  */
 export async function signInWithOAuth(provider: Provider) {
-  const supabase = createClient();
-
   const { error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
@@ -124,7 +119,6 @@ export async function checkEmailAvailability(email: string): Promise<boolean> {
  * 현재 사용자 정보 가져오기
  */
 export async function getCurrentUser() {
-  const supabase = createClient();
   const { data, error } = await supabase.auth.getUser();
 
   if (error) throw error;
@@ -136,7 +130,6 @@ export async function getCurrentUser() {
  * 현재 세션 가져오기
  */
 export async function getSession() {
-  const supabase = createClient();
   const { data, error } = await supabase.auth.getSession();
 
   if (error) throw error;

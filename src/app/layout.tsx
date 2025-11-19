@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { Noto_Sans_KR, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
-import AppShell from "@/components/layouts/AppShell";
-import Provider from "@/components/layouts/Provider";
+import AppShell from "@/components/layout/AppShell";
+import Provider from "@/components/layout/Provider";
 
 const noto = Noto_Sans_KR({
   subsets: ["latin"],

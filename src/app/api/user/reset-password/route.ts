@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { ROUTES } from "@/lib/constants/routes";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const norm = (s: string) => (s || "").trim().toLowerCase();
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
 
     // 재설정 메일 발송
     const SITE = process.env.NEXT_PUBLIC_SITE_URL!;
-    const redirectUrl = `${SITE}/auth/callback?type=recovery`;
+    const redirectUrl = `${SITE}${ROUTES.AUTH.CALLBACK}?type=recovery`;
 
     const srv = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -1,5 +1,5 @@
-import FindPW from "@/components/account/FindPW";
-import FindTabs from "@/components/account/FindTabs";
+import FindPW from "@/components/features/account/FindPW";
+import FindTabs from "@/components/features/account/FindTabs";
 
 export default function Page() {
   return (
