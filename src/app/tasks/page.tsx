@@ -1,7 +1,7 @@
 "use client";
 
-import BottomNavBar from "@/components/common/BottomNavBar";
-import FloatingActionButton from "@/components/common/FloatingActionButton";
+import BottomNavBar from "@/components/layout/BottomNavBar";
+import FloatingActionButton from "@/components/ui/FloatingActionButton";
 
 export default function TaskPage() {
   const handleAddTask = () => {
